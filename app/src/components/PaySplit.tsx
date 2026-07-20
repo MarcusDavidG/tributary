@@ -13,6 +13,7 @@ import {
 } from "../lib/tributary";
 import { useTranslation } from "../lib/i18n";
 import TokenPicker from "./TokenPicker";
+import Tooltip from "./Tooltip";
 
 export default function PaySplit({
   wallet,
@@ -164,16 +165,26 @@ export default function PaySplit({
       </div>
       {amountError && <p className="note">{amountError}</p>}
       {selected && preview.length === selected.recipients.length && (
-        <ul className="preview">
-          {selected.recipients.map((r, i) => (
-            <li key={i}>
-              <span>{recipientLabel(r)}</span>
-              <span>
-                {fromStroops(preview[i])} {token.code}
-              </span>
-            </li>
-          ))}
-        </ul>
+        <div className="preview">
+          <div className="preview-heading">
+            <span>Payout preview</span>
+            <Tooltip label="dust">
+              Dust is the tiny remainder left when a payment cannot be divided
+              exactly. It goes to the last recipient so no funds are left
+              behind.
+            </Tooltip>
+          </div>
+          <ul>
+            {selected.recipients.map((r, i) => (
+              <li key={i}>
+                <span>{recipientLabel(r)}</span>
+                <span>
+                  {fromStroops(preview[i])} {token.code}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {/* Trustline warnings — shown once a split and token are both chosen */}
@@ -209,6 +220,7 @@ export default function PaySplit({
         disabled={busy || !!amountError || hasBlockingWarnings}
         onClick={submit}
       >
+        {busy && <span className="btn-spinner" />}
         {busy ? t("waitingForSignature") : t("payButton")}
       </button>
       {message && <p className="note">{message}</p>}
