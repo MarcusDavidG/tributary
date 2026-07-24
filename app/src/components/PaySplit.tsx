@@ -105,40 +105,6 @@ export default function PaySplit({
   // Only block the payment when there are confirmed missing trustlines
   const hasBlockingWarnings = blockingWarnings.length > 0;
 
-  // Trustline check — debounced 400 ms, fired when split or token changes
-  useEffect(() => {
-    setTrustlineResult(null);
-    if (!selected) return;
-
-    if (trustlineTimer.current) clearTimeout(trustlineTimer.current);
-    trustlineTimer.current = setTimeout(() => {
-      setTrustlineChecking(true);
-      checkTrustlines(selected, token)
-        .then((result) => {
-          setTrustlineResult(result);
-        })
-        .catch(() => {
-          // Network failure — treat as inconclusive, do not block payment
-          setTrustlineResult({ warnings: [], hasErrors: true });
-        })
-        .finally(() => {
-          setTrustlineChecking(false);
-        });
-    }, 400);
-
-    return () => {
-      if (trustlineTimer.current) clearTimeout(trustlineTimer.current);
-    };
-  }, [splitId, token]);
-
-  // Derive blocking warnings (confirmed no-trustline) vs inconclusive notices
-  const blockingWarnings =
-    trustlineResult?.warnings.filter((w) => w.status === "no_trustline") ?? [];
-  const inconclusiveWarnings =
-    trustlineResult?.warnings.filter((w) => w.status === "inconclusive") ?? [];
-  // Only block the payment when there are confirmed missing trustlines
-  const hasBlockingWarnings = blockingWarnings.length > 0;
-
   async function submit() {
     if (!wallet) {
       setMessage(t("connectWalletFirst"));
